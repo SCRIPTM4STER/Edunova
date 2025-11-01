@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ pdf.title|default:pdf.file_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        hr {
+            margin: 20px 0;
+        }
+        .metadata {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .description {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ pdf.title|default:"Untitled PDF" }}</h1>
+
+    {% if pdf.description %}
+    <div class="description">
+        <p>{{ pdf.description }}</p>
+    </div>
+    {% endif %}
+
+    {% if pdf.cover_image %}
+    <div class="cover-image">
+        <img src="{{ pdf.cover_image.url }}" alt="Cover Image" style="max-width: 100%; height: auto; margin-top: 20px;">
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <div class="metadata">
+        <p>File Name: {{ pdf.file_name }}</p>
+        <p>Uploaded by: {{ pdf.uploaded_by.username|default:"Anonymous" }}</p>
+        <p>Uploaded at: {{ pdf.created_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+</body>
+</html>
