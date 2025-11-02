@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: edunova_web
+    command: gunicorn edunova.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+    volumes:
+      - ./media:/app/media
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: edunova_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-django_quickstart}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

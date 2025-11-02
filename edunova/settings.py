@@ -8,7 +8,11 @@ from dotenv import dotenv_values
 # ======================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-env_vars = dotenv_values(".env")
+
+# Load environment variables from .env file (if exists), then from OS environment
+# This allows the .env file to work locally while Railway environment variables work in production
+env_file = dotenv_values(".env") or {}
+env_vars = {**env_file, **os.environ}
 
 SECRET_KEY = env_vars.get("SECRET_KEY", "django-insecure-dev-key")
 DEBUG = env_vars.get("DEBUG", "True") == "True"
@@ -110,9 +114,14 @@ WSGI_APPLICATION = 'edunova.wsgi.application'
 # DATABASE
 # ======================================================
 
-# Use PostgreSQL in production or if POSTGRES_LOCALLY is True
-# Otherwise, fall back to SQLite for development
-if POSTGRES_LOCALLY or ENVIRONMENT == 'production':
+# Determine which database to use
+# PostgreSQL is used if:
+# 1. POSTGRES_LOCALLY is True
+# 2. ENVIRONMENT is production
+# 3. DB_HOST is set (Railway and other platforms set this automatically)
+use_postgres = POSTGRES_LOCALLY or ENVIRONMENT == 'production' or env_vars.get("DB_HOST")
+
+if use_postgres:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -220,7 +229,7 @@ USE_TZ = True
 # ======================================================
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
