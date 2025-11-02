@@ -20,6 +20,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Health check endpoints
+    path('/', health_check, name='health-check'),
     path('api/health/', health_check, name='health-check'),
     path('api/health/detailed/', health_check_detailed, name='health-check-detailed'),
     
