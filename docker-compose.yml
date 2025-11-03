@@ -4,7 +4,6 @@ services:
   web:
     build: .
     container_name: edunova_web
-    command: gunicorn edunova.wsgi:application --bind 0.0.0.0:$PORT --workers 3
     volumes:
       - ./media:/app/media
       - ./logs:/app/logs
@@ -12,6 +11,9 @@ services:
       - .env
     environment:
       ENVIRONMENT: production
+      DATABASE_URL: postgres://$DB_USER:$DB_PASSWORD@db:5432/$DB_NAME
+    depends_on:
+      - db
     restart: unless-stopped
 
   db:

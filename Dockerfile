@@ -7,8 +7,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
-# libsqlite3 packages are needed for SQLite support (even if using PostgreSQL as primary DB)
-# libpq-dev and gcc are needed for psycopg2 to compile
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libsqlite3-0 \
     libsqlite3-dev \
@@ -36,6 +34,9 @@ RUN mkdir -p staticfiles media/logs media/temp media/notes media/pdfs
 # Expose port 8000
 EXPOSE 8000
 
-# Default command (can be overridden)
-CMD ["gunicorn", "edunova.wsgi:application", "--config", "gunicorn_config.py"]
+# Entrypoint script to run migrations before starting Gunicorn
+COPY ./entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
+# Default command
+CMD ["/app/entrypoint.sh"]
