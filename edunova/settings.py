@@ -24,7 +24,7 @@ POSTGRES_LOCALLY = env_vars.get("POSTGRES_LOCALLY", "False") == "True"
 # CSRF Trusted Origins - Required for secure frontend-to-backend communication
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() 
-    for origin in env_vars.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    for origin in env_vars.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000, http://127.0.0.1:3000").split(",")
     if origin.strip()
 ]
 
@@ -124,37 +124,30 @@ WSGI_APPLICATION = 'edunova.wsgi.application'
 # 2. ENVIRONMENT is production
 # 3. DB_HOST is set (Railway and other platforms set this automatically)
 use_postgres = POSTGRES_LOCALLY or ENVIRONMENT == 'production' or env_vars.get("DB_HOST")
+# use_postgres = ENVIRONMENT == 'production' or env_vars.get("DB_HOST")
 
-DATABASES = {
+if use_postgres:
+    DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env_vars.get("DB_NAME"),
+            'NAME': env_vars.get("DB_NAME", "edunova"),
             'USER': env_vars.get("DB_USER", "postgres"),
-            'PASSWORD': env_vars.get("DB_PASSWORD"),
-            'HOST': env_vars.get("DB_HOST"),
+            'PASSWORD': env_vars.get("DB_PASSWORD", ""),
+            'HOST': env_vars.get("DB_HOST", "localhost"),
             'PORT': env_vars.get("DB_PORT", "5432"),
         }
     }
+else:
+    # SQLite fallback for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
-# if use_postgres:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': env_vars.get("DB_NAME", "Edunova"),
-#             'USER': env_vars.get("DB_USER", "postgres"),
-#             'PASSWORD': env_vars.get("DB_PASSWORD", "password"),
-#             'HOST': env_vars.get("DB_HOST", "localhost"),
-#             'PORT': env_vars.get("DB_PORT", "5432"),
-#         }
-#     }
-# else:
-#     # SQLite fallback for development
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
+    
+GOOGLE_CLIENT_ID = env_vars.get("GOOGLE_CLIENT_ID", "")
 
 # ======================================================
 # AUTHENTICATION
@@ -168,8 +161,10 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+# django-allauth configuration (replace deprecated/invalid keys)
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

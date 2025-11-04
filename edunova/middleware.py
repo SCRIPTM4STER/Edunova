@@ -78,9 +78,13 @@ class CustomErrorMiddleware:
                 elif str(exception):
                     detail = str(exception)
                 
-                # In production, don't expose internal error details
-                if request.META.get('ENVIRONMENT') != 'production':
-                    detail = f"{type(exception).__name__}: {str(exception)}"
+                # In debug, expose internal error details; hide in production
+                try:
+                    from django.conf import settings as dj_settings
+                    if getattr(dj_settings, 'DEBUG', False):
+                        detail = f"{type(exception).__name__}: {str(exception)}"
+                except Exception:
+                    pass
                 
                 return JsonResponse(
                     {

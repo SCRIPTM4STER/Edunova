@@ -9,6 +9,7 @@ from .models import Profile
 
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
+from django.conf import settings
 
 
 User = get_user_model()
@@ -86,10 +87,13 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
     def validate_token(self, value):
         try:
             # Validate Google token
+            audience = getattr(settings, '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', None)
+            if not audience:
+                raise serializers.ValidationError("Google Sign-In not configured on server.")
             idinfo = id_token.verify_oauth2_token(
                 value,
                 google_requests.Request(),
-                audience='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'  # your frontend client ID
+                audience=audience
             )
 
             email = idinfo.get('email')
